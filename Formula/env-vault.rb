@@ -29,6 +29,6 @@ class EnvVault < Formula
   end
 
   test do
-    assert_match version.to_s, shell_output("#{bin}/env-vault --version")
+    assert_equal "v#{version}", shell_output("#{bin}/env-vault --version").strip
   end
 end
