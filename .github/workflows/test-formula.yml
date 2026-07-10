@@ -1,0 +1,21 @@
+name: test-formula
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: brew style
+        run: brew style Formula/env-vault.rb
+
+      - name: brew install
+        run: brew install --formula Formula/env-vault.rb
+
+      - name: brew test
+        run: brew test --formula Formula/env-vault.rb
