@@ -1,26 +1,26 @@
 class EnvVault < Formula
   desc "Secure environment variable vault for running commands with profiles"
   homepage "https://github.com/ildarbinanas-design/env-vault"
-  version "0.0.4"
+  version "0.0.5"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.4/env-vault-darwin-arm64.tar.gz"
-      sha256 "a1ad63c873d4748b166bde09c588bfd52aa7eb33f0b75d64718ac38870985ebf"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.5/env-vault-darwin-arm64.tar.gz"
+      sha256 "6fc9cbf7703ac64b99a188f496175c8c8aaa6c05d8956a63bd2b6db4eb91d04a"
     else
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.4/env-vault-darwin-amd64.tar.gz"
-      sha256 "b5f55ce23f4157a058a3fbf0a1fa1e4e8220bb66e3500fb617373c8fedbd5473"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.5/env-vault-darwin-amd64.tar.gz"
+      sha256 "ad98d8eb2dc6c97e1e2a4a280798a058433a639a4ec591edc2ab1ea0edc93d0b"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.4/env-vault-linux-arm64.tar.gz"
-      sha256 "2f1d8014775e677213d9b15416ba408ae5268f62c77510a2152d03680ce1a7f5"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.5/env-vault-linux-arm64.tar.gz"
+      sha256 "3186e07b2caedfa8a9af539c636fd4ea87e8f02fa126a8420abf04529d09c131"
     else
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.4/env-vault-linux-amd64.tar.gz"
-      sha256 "a15ce6024633bc8fd585885ebca8dc9b1ba0eaf3c9a664c82318749a79197ec0"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.5/env-vault-linux-amd64.tar.gz"
+      sha256 "9d8f723475ffd003d8ae34cdbdc717a5caba81929357a55833f101f5c6e4c7d7"
     end
   end
 
@@ -29,6 +29,6 @@ class EnvVault < Formula
   end
 
   test do
-    assert_match "env-vault", shell_output("#{bin}/env-vault --help")
+    assert_match version.to_s, shell_output("#{bin}/env-vault --version")
   end
 end
