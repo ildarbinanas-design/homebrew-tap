@@ -15,7 +15,9 @@ brew tap ildarbinanas-design/tap
 brew install env-vault
 ```
 
-Works on macOS (Apple Silicon and Intel) and Linux (arm64 and amd64).
+Works on macOS 15 Sequoia or newer (Apple Silicon and Intel) and Linux
+(arm64 and amd64). The macOS minimum matches the environments used to build
+and verify the CGO-enabled release binaries.
 No `xattr -d com.apple.quarantine` needed — Homebrew downloads do not get the
 Gatekeeper quarantine attribute.
 

@@ -5,15 +5,29 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 env:
   HOMEBREW_NO_AUTO_UPDATE: "1"
   HOMEBREW_NO_INSTALL_CLEANUP: "1"
 
 jobs:
-  test:
-    runs-on: macos-latest
+  formula:
+    name: formula (${{ matrix.arch }} on ${{ matrix.runner }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Tap this checkout
         run: brew tap ildarbinanas-design/tap "$GITHUB_WORKSPACE"
@@ -21,8 +35,23 @@ jobs:
       - name: brew style
         run: brew style ildarbinanas-design/tap
 
+      - name: brew audit
+        run: brew audit --strict ildarbinanas-design/tap/env-vault
+
       - name: brew install
         run: brew install ildarbinanas-design/tap/env-vault
 
       - name: brew test
         run: brew test ildarbinanas-design/tap/env-vault
+
+  # Keep this exact check name: the active main ruleset requires `test`.
+  test:
+    name: test
+    if: ${{ always() }}
+    needs: formula
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every formula matrix job
+        env:
+          FORMULA_RESULT: ${{ needs.formula.result }}
+        run: test "$FORMULA_RESULT" = "success"
