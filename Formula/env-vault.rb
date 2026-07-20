@@ -1,32 +1,32 @@
 class EnvVault < Formula
   desc "Secure environment variable vault for running commands with profiles"
   homepage "https://github.com/ildarbinanas-design/env-vault"
-  version "0.0.18"
+  version "0.1.0"
   license "MIT"
 
   on_macos do
     depends_on macos: :sequoia
 
     on_arm do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.18/env-vault-darwin-arm64.tar.gz"
-      sha256 "a54d29f44132aa1498e456d563de55bf11178ed5c0dfb3b993d5ec4f0e9f9d3a"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.1.0/env-vault-darwin-arm64.tar.gz"
+      sha256 "1414cf087a66e663a65e6fc43b06d56dc0121c5eee7864031a15231dd0534409"
     end
 
     on_intel do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.18/env-vault-darwin-amd64.tar.gz"
-      sha256 "1c2d3f67b577352375dbc73a27f5f3bbf8d8275561c1524d873677d05431e4ac"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.1.0/env-vault-darwin-amd64.tar.gz"
+      sha256 "2dec8d2c76ea0a7177189751dc841e5fb6c0290b890752670793a58a0576f617"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.18/env-vault-linux-arm64.tar.gz"
-      sha256 "2c8b18de4a65f3a35d504973c17571919cdbe454da9d8b63feeb05de9c03c548"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.1.0/env-vault-linux-arm64.tar.gz"
+      sha256 "cfe0a0ea995c686e2dea02b6cbfe718a392e9c9c6a728972e9dd52c1380747b9"
     end
 
     on_intel do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.0.18/env-vault-linux-amd64.tar.gz"
-      sha256 "4dc60e662b1427e5e2ac00d74f7a03d36d8aeae3292745e1e168b4446f717199"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.1.0/env-vault-linux-amd64.tar.gz"
+      sha256 "93a1cbf23239391c3fa549f5fb37d4aa4649518c2d3e8ba1f1d1374f4e1460c5"
     end
   end
 
