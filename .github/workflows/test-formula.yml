@@ -14,7 +14,7 @@ env:
 
 jobs:
   formula:
-    name: formula (${{ matrix.arch }} on ${{ matrix.runner }})
+    name: formula (${{ matrix.formula }}, ${{ matrix.arch }} on ${{ matrix.runner }})
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -22,10 +22,18 @@ jobs:
         include:
           - runner: macos-15
             arch: arm64
+            formula: env-vault
           - runner: macos-15-intel
             arch: x86_64
+            formula: env-vault
+          - runner: macos-15
+            arch: arm64
+            formula: macos-user-settings
+          - runner: macos-15-intel
+            arch: x86_64
+            formula: macos-user-settings
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -36,13 +44,13 @@ jobs:
         run: brew style ildarbinanas-design/tap
 
       - name: brew audit
-        run: brew audit --strict ildarbinanas-design/tap/env-vault
+        run: brew audit --strict "ildarbinanas-design/tap/${{ matrix.formula }}"
 
       - name: brew install
-        run: brew install ildarbinanas-design/tap/env-vault
+        run: brew install "ildarbinanas-design/tap/${{ matrix.formula }}"
 
       - name: brew test
-        run: brew test ildarbinanas-design/tap/env-vault
+        run: brew test "ildarbinanas-design/tap/${{ matrix.formula }}"
 
   # Keep this exact check name: the active main ruleset requires `test`.
   test:
