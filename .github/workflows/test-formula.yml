@@ -88,10 +88,14 @@ jobs:
           version="$(sed -nE 's/^  version "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' "$file")"
           test -n "$version"
           prefix="https://github.com/ildarbinanas-design/${FORMULA}/releases/download/v${version}/${FORMULA}-"
-          urls="$(grep -cE '^ *url "' "$file" || true)"
-          # Any other spelling of url (url(...), extra spaces) would escape the pairing below.
-          if [ "$(grep -cE '(^|[^A-Za-z0-9_])url([^A-Za-z0-9_]|$)' "$file" || true)" -ne "$urls" ]; then
-            echo "::error::${file}: every url must be written as url \"...\" on its own line"
+          # Every url and sha256 must be one canonical call alone on its line, so
+          # that url(...), extra spaces, or a second call on the same line cannot
+          # escape the pairing below.
+          urls="$(grep -cE '^ *url "[^"]*"$' "$file" || true)"
+          sums="$(grep -cE '^ *sha256 "[0-9a-f]{64}"$' "$file" || true)"
+          if [ "$(grep -cE '(^|[^A-Za-z0-9_])url([^A-Za-z0-9_]|$)' "$file" || true)" -ne "$urls" ] ||
+            [ "$(grep -cE '(^|[^A-Za-z0-9_])sha256([^A-Za-z0-9_]|$)' "$file" || true)" -ne "$sums" ]; then
+            echo "::error::${file}: every url and sha256 must be a single url \"...\" or sha256 \"...\" call on its own line"
             exit 1
           fi
           checked=0
