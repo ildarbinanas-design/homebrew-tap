@@ -88,13 +88,18 @@ jobs:
           version="$(sed -nE 's/^  version "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' "$file")"
           test -n "$version"
           prefix="https://github.com/ildarbinanas-design/${FORMULA}/releases/download/v${version}/${FORMULA}-"
-          urls="$(grep -cE '^ *url "' "$file")"
+          urls="$(grep -cE '^ *url "' "$file" || true)"
           checked=0
           while read -r url sum; do
-            case "$url" in
-              "$prefix"*) ;;
-              *) echo "::error::${url} is not a ${FORMULA} v${version} release asset"; exit 1 ;;
-            esac
+            # Exact asset names only: no path segments, dot segments, or query.
+            if [[ "$url" != "$prefix"* || ! "${url#"$prefix"}" =~ ^[a-z0-9-]+\.(tar\.gz|zip)$ ]]; then
+              echo "::error::${url} is not a ${FORMULA} v${version} release asset"
+              exit 1
+            fi
+            if [[ ! "$sum" =~ ^[0-9a-f]{64}$ ]]; then
+              echo "::error::${url} has no sha256 line after it"
+              exit 1
+            fi
             published="$(curl -fsSL --retry 3 "${url}.sha256" | awk 'NR == 1 { print $1 }')"
             if [ "$published" != "$sum" ]; then
               echo "::error::sha256 for ${url} differs from the published ${url}.sha256"
@@ -105,8 +110,10 @@ jobs:
             /^ *url "/ { u = $0; sub(/^ *url "/, "", u); sub(/".*/, "", u); next }
             /^ *sha256 "/ { s = $0; sub(/^ *sha256 "/, "", s); sub(/".*/, "", s); print u, s; u = "" }
           ' "$file")
-          test "$checked" -gt 0
-          test "$checked" -eq "$urls"
+          if [ "$checked" -eq 0 ] || [ "$checked" -ne "$urls" ]; then
+            echo "::error::${file}: ${urls} url lines but ${checked} url/sha256 pairs"
+            exit 1
+          fi
           echo "${FORMULA} v${version}: ${checked} url/sha256 pairs match the published checksums"
 
   # Keep this exact check name: the active main ruleset requires `test`.
