@@ -40,6 +40,12 @@ jobs:
       - name: Tap this checkout
         run: brew tap ildarbinanas-design/tap "$GITHUB_WORKSPACE"
 
+      # Homebrew 6 ignores formulae from untrusted third-party taps, so
+      # `brew audit` of this checkout fails before it is installed. Trust only
+      # the formula under test, not the whole tap.
+      - name: Trust the formula under test
+        run: brew trust --formula "ildarbinanas-design/tap/${{ matrix.formula }}"
+
       - name: brew style
         run: brew style ildarbinanas-design/tap
 
