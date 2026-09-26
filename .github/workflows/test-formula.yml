@@ -89,6 +89,11 @@ jobs:
           test -n "$version"
           prefix="https://github.com/ildarbinanas-design/${FORMULA}/releases/download/v${version}/${FORMULA}-"
           urls="$(grep -cE '^ *url "' "$file" || true)"
+          # Any other spelling of url (url(...), extra spaces) would escape the pairing below.
+          if [ "$(grep -cE '(^|[^A-Za-z0-9_])url([^A-Za-z0-9_]|$)' "$file" || true)" -ne "$urls" ]; then
+            echo "::error::${file}: every url must be written as url \"...\" on its own line"
+            exit 1
+          fi
           checked=0
           while read -r url sum; do
             # Exact asset names only: no path segments, dot segments, or query.
@@ -100,7 +105,10 @@ jobs:
               echo "::error::${url} has no sha256 line after it"
               exit 1
             fi
-            published="$(curl -fsSL --retry 3 "${url}.sha256" | awk 'NR == 1 { print $1 }')"
+            if ! published="$(curl -fsSL --retry 3 "${url}.sha256" | awk 'NR == 1 { print $1 }')" || [ -z "$published" ]; then
+              echo "::error::could not download ${url}.sha256"
+              exit 1
+            fi
             if [ "$published" != "$sum" ]; then
               echo "::error::sha256 for ${url} differs from the published ${url}.sha256"
               exit 1
