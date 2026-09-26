@@ -63,14 +63,61 @@ jobs:
       - name: brew test
         run: brew test "ildarbinanas-design/tap/${{ matrix.formula }}"
 
+  # A formula may point only at its own project's release assets for its
+  # version, with the checksums that release published. Installing and running
+  # --version cannot tell a genuine asset from a substituted one.
+  pins:
+    name: pins (${{ matrix.formula }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        formula: [env-vault, macos-user-settings]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Match every url and sha256 to the published release checksums
+        env:
+          FORMULA: ${{ matrix.formula }}
+        run: |
+          set -euo pipefail
+          file="Formula/${FORMULA}.rb"
+          version="$(sed -nE 's/^  version "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' "$file")"
+          test -n "$version"
+          prefix="https://github.com/ildarbinanas-design/${FORMULA}/releases/download/v${version}/${FORMULA}-"
+          urls="$(grep -cE '^ *url "' "$file")"
+          checked=0
+          while read -r url sum; do
+            case "$url" in
+              "$prefix"*) ;;
+              *) echo "::error::${url} is not a ${FORMULA} v${version} release asset"; exit 1 ;;
+            esac
+            published="$(curl -fsSL --retry 3 "${url}.sha256" | awk 'NR == 1 { print $1 }')"
+            if [ "$published" != "$sum" ]; then
+              echo "::error::sha256 for ${url} differs from the published ${url}.sha256"
+              exit 1
+            fi
+            checked=$((checked + 1))
+          done < <(awk '
+            /^ *url "/ { u = $0; sub(/^ *url "/, "", u); sub(/".*/, "", u); next }
+            /^ *sha256 "/ { s = $0; sub(/^ *sha256 "/, "", s); sub(/".*/, "", s); print u, s; u = "" }
+          ' "$file")
+          test "$checked" -gt 0
+          test "$checked" -eq "$urls"
+          echo "${FORMULA} v${version}: ${checked} url/sha256 pairs match the published checksums"
+
   # Keep this exact check name: the active main ruleset requires `test`.
   test:
     name: test
     if: ${{ always() }}
-    needs: formula
+    needs: [formula, pins]
     runs-on: ubuntu-latest
     steps:
       - name: Require every formula matrix job
         env:
           FORMULA_RESULT: ${{ needs.formula.result }}
-        run: test "$FORMULA_RESULT" = "success"
+          PINS_RESULT: ${{ needs.pins.result }}
+        run: test "$FORMULA_RESULT" = "success" && test "$PINS_RESULT" = "success"
