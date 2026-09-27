@@ -27,14 +27,5 @@ released, so integrity outranks convenience.
 
 The Working Mode section of env-vault's `AGENTS.md`
 (<https://github.com/ildarbinanas-design/env-vault/blob/main/AGENTS.md#working-mode>)
-governs this repository too: the Audit Autonomy Window, the Standing
-Delegation, and how to ask the owner. Read it before any write.
-
-### Audit Autonomy Window
-
-Open from 2026-09-26 until it closes in env-vault, and no later than
-2026-10-10T00:00:00Z. Delete this subsection in the same step as env-vault's.
-While it is open, agents may merge their own pull requests here, including
-workflow changes, once `test` is green on the exact head and a fresh-context
-review found nothing blocking. Releasing, deleting tags or releases,
-force-pushing, and weakening these rules stay with the owner.
+governs this repository too: the Standing Delegation and how to ask the
+owner. Read it before any write.
