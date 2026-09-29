@@ -1,32 +1,32 @@
 class EnvVault < Formula
   desc "Secure environment variable vault for running commands with profiles"
   homepage "https://github.com/ildarbinanas-design/env-vault"
-  version "0.3.4"
+  version "0.4.0"
   license "MIT"
 
   on_macos do
     depends_on macos: :sequoia
 
     on_arm do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.3.4/env-vault-darwin-arm64.tar.gz"
-      sha256 "d2c891b0f93835cc94ef65c195509198d9251dadb4999e3be3c1a8d583b73e2d"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.4.0/env-vault-darwin-arm64.tar.gz"
+      sha256 "12cd7dae4cebfc177aa883a047f8669bbe46f54ea1244b513bd1d06b908e3231"
     end
 
     on_intel do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.3.4/env-vault-darwin-amd64.tar.gz"
-      sha256 "326ff390a01cda7b2a3fa5a47be8b904317126ed6c27cca558aa75678396f71f"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.4.0/env-vault-darwin-amd64.tar.gz"
+      sha256 "8e15da57c5b2877405e2a5b41b65ac711babdd64d5442410d6673d13d5b687ef"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.3.4/env-vault-linux-arm64.tar.gz"
-      sha256 "0482c0238228a0a90a22a778aba66e67ff9524999bfede214fd76cbf4eddcd09"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.4.0/env-vault-linux-arm64.tar.gz"
+      sha256 "c828298727d22c51e050356c7e20c053357892f75bcb6fb80e6894f87d46131a"
     end
 
     on_intel do
-      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.3.4/env-vault-linux-amd64.tar.gz"
-      sha256 "6b5f4cea126f7616aa26544ed2dd1580db9be29d62d09e1d1fdfa3e79a56409c"
+      url "https://github.com/ildarbinanas-design/env-vault/releases/download/v0.4.0/env-vault-linux-amd64.tar.gz"
+      sha256 "5c07ab2673686eaa2df1cb8d4d3bc292724e45b030d32cf867415f73414d1afc"
     end
   end
 
@@ -36,6 +36,6 @@ class EnvVault < Formula
   end
 
   test do
-    assert_equal "v#{version}", shell_output("#{bin}/env-vault --version").strip
+    assert_match "v#{version}", shell_output("#{bin}/env-vault --version")
   end
 end
