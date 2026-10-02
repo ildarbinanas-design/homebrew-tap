@@ -7,11 +7,12 @@ released, so integrity outranks convenience.
 ## Hard Rules
 
 - `Formula/env-vault.rb` is written only by the env-vault release workflow
-  (`scripts/release/generate-homebrew-formula.sh` and
-  `scripts/release/publish-homebrew-pr.sh` in env-vault). It opens the formula
-  pull request and merges it head-guarded after the `test` check passes, and it
-  compares the formula byte for byte. Never edit it by hand; change the
-  generator in env-vault instead.
+  (`.github/workflows/release.yml`, using `scripts/release/homebrew-formula.sh`
+  in env-vault). After publishing and verifying the release, its tap job opens
+  the formula pull request and enables auto-merge. GitHub merges it after the
+  tap's required `test` check passes. Tap CI verifies the complete formula
+  against its template and published release checksums. Never edit the formula
+  by hand; change the generator in env-vault instead.
 - `Formula/macos-user-settings.rb` pins that project's release archives. Change
   `version`, every `url`, and every `sha256` together, and take each checksum
   from the checksums the release published, never from a local build.
