@@ -1,0 +1,28 @@
+class MacosUserSettings < Formula
+  desc "Manage selected macOS user preferences from a strict YAML profile"
+  homepage "https://github.com/ildarbinanas-design/macos-user-settings"
+  version "$version"
+  license "MIT"
+
+  on_macos do
+    depends_on macos: :sequoia
+
+    on_arm do
+      url "https://github.com/ildarbinanas-design/macos-user-settings/releases/download/v$version/macos-user-settings-darwin-arm64.tar.gz"
+      sha256 "$sha256_darwin_arm64"
+    end
+
+    on_intel do
+      url "https://github.com/ildarbinanas-design/macos-user-settings/releases/download/v$version/macos-user-settings-darwin-amd64.tar.gz"
+      sha256 "$sha256_darwin_amd64"
+    end
+  end
+
+  def install
+    bin.install "macos-user-settings"
+  end
+
+  test do
+    assert_match(/\Amacos-user-settings v#{version} \([0-9a-f]{40}\)\z/, shell_output("#{bin}/macos-user-settings version").strip)
+  end
+end
