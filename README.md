@@ -41,3 +41,35 @@ brew upgrade macos-user-settings
 Each formula is pinned to immutable artifacts from the corresponding tagged
 project release: [env-vault](https://github.com/ildarbinanas-design/env-vault)
 and [macos-user-settings](https://github.com/ildarbinanas-design/macos-user-settings).
+
+## Formula verification
+
+CI compares each complete formula, byte for byte, with its template in
+`.github/workflows/formula-check/templates/`. It fills only the version and the checksums from
+that project's published release sidecars. The checker never evaluates Ruby
+to decide whether a formula is trusted. Homebrew style, strict audit, install,
+and test still run on both supported macOS architectures.
+
+The checker and templates stay in the reserved workflow directory, so changes
+to what CI accepts follow the owner's merge rules.
+
+Run the offline checker tests with Python 3.9 or newer:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+To verify a checked-in formula against the live release, run:
+
+```sh
+python3 .github/workflows/formula-check/verify_formula.py env-vault
+python3 .github/workflows/formula-check/verify_formula.py macos-user-settings
+```
+
+When a project's release generator changes the formula structure, update its
+template in this tap as part of the same reviewed change, before publishing
+the new formula. For env-vault the generator is
+`scripts/release/homebrew-formula.sh` in its source repository. Version and
+checksum updates need no template change. Golden formula fixtures in
+`tests/fixtures/` record the earlier releases used by the offline tests; they
+do not follow later version bumps.
