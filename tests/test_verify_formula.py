@@ -35,7 +35,7 @@ RELEASES = {
 class FormulaVerificationTest(unittest.TestCase):
     def formula(self, name):
         # Stable golden files are independent of a later formula release bump.
-        return (ROOT / "tests" / "fixtures" / (name + ".rb")).read_bytes()
+        return (ROOT / "tests" / "fixtures" / (name + ".rb.txt")).read_bytes()
 
     def checksums(self, name, version=None):
         released_version, sums = RELEASES[name]
