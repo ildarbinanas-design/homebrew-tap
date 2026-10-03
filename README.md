@@ -48,7 +48,8 @@ CI compares each complete formula, byte for byte, with its template in
 `.github/workflows/formula-check/templates/`. It fills only the version and the checksums from
 that project's published release sidecars. The checker never evaluates Ruby
 to decide whether a formula is trusted. Homebrew style, strict audit, install,
-and test still run on both supported macOS architectures.
+and test run on both supported macOS architectures, plus Linux amd64 for
+env-vault.
 
 The checker and templates stay in the reserved workflow directory, so changes
 to what CI accepts follow the owner's merge rules.
@@ -73,3 +74,9 @@ the new formula. For env-vault the generator is
 checksum updates need no template change. Golden formula fixtures in
 `tests/fixtures/` record the earlier releases used by the offline tests; they
 do not follow later version bumps.
+
+env-vault releases through 0.4.3 keep the frozen version-only test template.
+Later releases require the current template, whose test creates a profile,
+adds and removes a mapping in Homebrew's temporary `testpath`, and never opens
+a secret store. This version boundary lets the checker update land before
+the next generated formula without changing an already published formula.
