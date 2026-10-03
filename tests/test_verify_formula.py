@@ -37,6 +37,25 @@ class FormulaVerificationTest(unittest.TestCase):
         # Stable golden files are independent of a later formula release bump.
         return (ROOT / "tests" / "fixtures" / (name + ".rb.txt")).read_bytes()
 
+    def modern_formula(self, version="0.4.4"):
+        # Keep the original release fixture frozen; only this test expansion
+        # describes the new generator's profile test.
+        old = self.formula("env-vault").replace(b'0.4.1', version.encode("ascii"))
+        addition = b'''
+    # Profile mappings are metadata; this never opens a secret store.
+    config = testpath/"config.yaml"
+    system bin/"env-vault", "--config", config, "profile", "create", "brew-test"
+    system bin/"env-vault", "--config", config, "profile", "add", "brew-test", "brew-token:BREW_TEST_TOKEN"
+    show = "#{bin}/env-vault --config #{config} --json profile show brew-test"
+    data = JSON.parse(shell_output(show)).fetch("data")
+    assert_equal "brew-test", data.fetch("profile")
+    assert_equal ["BREW_TEST_TOKEN"], data.fetch("secrets").map { |mapping| mapping.fetch("env") }
+    system bin/"env-vault", "--config", config, "profile", "remove", "brew-test", "BREW_TEST_TOKEN"
+    assert_empty JSON.parse(shell_output(show)).fetch("data").fetch("secrets")
+'''
+        needle = b'    assert_match "v#{version}", shell_output("#{bin}/env-vault --version")\n'
+        return old.replace(needle, needle + addition)
+
     def checksums(self, name, version=None):
         released_version, sums = RELEASES[name]
         version = version or released_version
@@ -63,10 +82,42 @@ class FormulaVerificationTest(unittest.TestCase):
     def test_new_version_uses_only_its_canonical_sidecars(self):
         for name, (version, _) in RELEASES.items():
             with self.subTest(formula=name):
-                formula = self.formula(name).replace(version.encode("ascii"), b"12.34.56")
+                formula = (self.modern_formula("12.34.56") if name == "env-vault"
+                           else self.formula(name).replace(version.encode("ascii"), b"12.34.56"))
                 pending = self.checksums(name, "12.34.56")
                 self.assertEqual(checker.verify(name, formula, pending.pop), "12.34.56")
                 self.assertEqual(pending, {})
+
+    def test_env_vault_template_transition_is_version_bound(self):
+        for version in ("0.4.1", "0.4.3", "0.4.4", "0.10.0", "1.0.0"):
+            with self.subTest(version=version):
+                legacy = self.formula("env-vault").replace(b"0.4.1", version.encode("ascii"))
+                modern = self.modern_formula(version)
+                valid, invalid = ((legacy, modern) if tuple(map(int, version.split("."))) <= (0, 4, 3)
+                                  else (modern, legacy))
+                checksums = self.checksums("env-vault", version)
+                self.assertEqual(checker.verify("env-vault", valid, checksums.__getitem__), version)
+                with self.assertRaises(checker.InvalidFormula):
+                    checker.verify("env-vault", invalid, checksums.__getitem__)
+
+    def test_noncanonical_versions_never_choose_a_template_or_fetch(self):
+        def unexpected(_):
+            self.fail("noncanonical version fetched a checksum")
+
+        for version in (b"00.4.3", b"0.04.3", b"0.4.03", b"0.4.3-rc1", b"0.4.3+build", b"0.4"):
+            with self.subTest(version=version):
+                formula = self.formula("env-vault").replace(b"0.4.1", version)
+                with self.assertRaises(checker.InvalidFormula):
+                    checker.verify("env-vault", formula, unexpected)
+
+    def test_modern_profile_test_cannot_be_removed_or_changed(self):
+        formula = self.modern_formula()
+        for fragment in (b'"profile", "create"', b'"profile", "add"', b'"profile", "remove"',
+                         b'assert_empty', b'config = testpath/', b'mapping.fetch("env")'):
+            with self.subTest(fragment=fragment):
+                with self.assertRaises(checker.InvalidFormula):
+                    checker.verify("env-vault", formula.replace(fragment, b"changed"),
+                                   self.checksums("env-vault", "0.4.4").__getitem__)
 
     def test_any_formula_change_is_rejected(self):
         for name, (version, _) in RELEASES.items():

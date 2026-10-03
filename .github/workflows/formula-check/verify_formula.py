@@ -27,7 +27,8 @@ class InvalidFormula(ValueError):
 def release_version(formula):
     if len(formula) > MAX_FORMULA_BYTES:
         raise InvalidFormula("formula is too large")
-    versions = re.findall(rb'^  version "([0-9]+\.[0-9]+\.[0-9]+)"$', formula, re.M)
+    component = rb"(?:0|[1-9][0-9]*)"
+    versions = re.findall(rb'^  version "(' + component + rb'\.' + component + rb'\.' + component + rb')"$', formula, re.M)
     if len(versions) != 1:
         raise InvalidFormula("formula must contain one canonical version line")
     return versions[0].decode("ascii")
@@ -70,7 +71,13 @@ def verify(formula_name, formula, fetch=download_sidecar):
         substitutions["sha256_" + target.replace("-", "_")] = published_checksum(
             fetch(url), archive
         )
-    template_path = CHECKER_DIR / "templates" / (formula_name + ".rb.in")
+    template_name = formula_name + ".rb.in"
+    # Existing releases were generated with only a version smoke test. Keep
+    # their exact template until the next release replaces the live formula;
+    # newer versions must include the profile lifecycle test.
+    if formula_name == "env-vault" and tuple(map(int, version.split("."))) <= (0, 4, 3):
+        template_name = "env-vault-through-0.4.3.rb.in"
+    template_path = CHECKER_DIR / "templates" / template_name
     template = Template(template_path.read_bytes().decode("ascii"))
     expected = template.substitute(substitutions).encode("ascii")
     if formula != expected:
